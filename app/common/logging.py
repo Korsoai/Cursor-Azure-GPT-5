@@ -218,7 +218,7 @@ def log_request(req: Request) -> str:
     table.add_column("Description", style="white")
 
     for tool in tools:
-        function = tool.get("function")
+        function = tool.get("function") or {}
         parameters = function.get("parameters", {}) or {}
         required = parameters.get("required", []) or []
         props = parameters.get("properties", {}) or {}
