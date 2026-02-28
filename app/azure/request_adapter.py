@@ -158,10 +158,7 @@ class RequestAdapter:
 
         reasoning_effort = inbound_model.replace("gpt-", "").lower()
         if reasoning_effort not in {"high", "medium", "low", "minimal"}:
-            raise CursorConfigurationError(
-                "Model name must be either gpt-high, gpt-medium, gpt-low, or gpt-minimal."
-                f"\n\nGot: {inbound_model}"
-            )
+            reasoning_effort = "high"
 
         responses_body["reasoning"] = {
             "effort": reasoning_effort,
