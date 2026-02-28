@@ -248,7 +248,7 @@ def log_request(req: Request) -> str:
         table.add_row(
             f"{function.get('name')}",
             Group(
-                Markdown(escape_tags(function.get("description"))),
+                Markdown(escape_tags(function.get("description") or "")),
                 params_table,
             ),
         )
