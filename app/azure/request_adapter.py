@@ -100,7 +100,7 @@ class RequestAdapter:
             return out
 
         for tool in tools:
-            function = tool.get("function")
+            function = tool.get("function") or {}
             transformed: Dict[str, Any] = {
                 "type": "function",
                 "name": function.get("name"),
