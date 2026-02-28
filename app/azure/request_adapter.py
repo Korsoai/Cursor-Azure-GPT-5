@@ -45,7 +45,14 @@ class RequestAdapter:
             role = m.get("role")
             content = m.get("content")
             if role in {"system", "developer"}:
-                instructions_parts.append(content)
+                # content may be None or a list — coerce to string and skip blanks
+                if isinstance(content, list):
+                    content = " ".join(
+                        part.get("text", "") if isinstance(part, dict) else str(part)
+                        for part in content
+                    )
+                if content:
+                    instructions_parts.append(content)
                 continue
             # For user/assistant/tools as inputs
             if role == "tool":
@@ -53,20 +60,29 @@ class RequestAdapter:
 
                 item = {
                     "type": "function_call_output",
-                    "output": content,
+                    "output": content or "",
                     "status": "completed",
                     "call_id": call_id,
                 }
                 input_items.append(item)
             else:
+                # Build content array only when there is actual text
+                content_array = []
+                if content is not None:
+                    if isinstance(content, list):
+                        # Already in parts format — pass through
+                        content_array = content
+                    else:
+                        content_array = [
+                            {
+                                "type": "input_text" if role == "user" else "output_text",
+                                "text": content,
+                            }
+                        ]
+
                 item = {
                     "role": role or "user",
-                    "content": [
-                        {
-                            "type": "input_text" if role == "user" else "output_text",
-                            "text": content,
-                        },
-                    ],
+                    "content": content_array,
                 }
                 input_items.append(item)
 
