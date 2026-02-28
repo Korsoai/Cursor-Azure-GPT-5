@@ -90,7 +90,7 @@ def _capture_request_details(req: Request, request_id: str) -> Dict[str, Any]:
         "route_args": dict(req.view_args or {}),
         "query_args": multidict_to_dict(req.args),
         "form": multidict_to_dict(req.form),
-        "json": req.get_json(silent=True),
+        "json": req.get_json(silent=True, force=True),
         "cookies": req.cookies.to_dict() if req.cookies else {},
         "headers": redacted_headers,
         "user_agent": str(req.user_agent) if req.user_agent else "",

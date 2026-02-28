@@ -119,8 +119,16 @@ class RequestAdapter:
         # Reset per-request state
         self.adapter.inbound_model = None
 
-        # Parse request body
-        payload = req.get_json(silent=True, force=False) or {}
+        # Parse request body — use force=True so we always parse JSON regardless of
+        # Content-Type (Cursor may send application/json; charset=utf-8 or similar).
+        payload = req.get_json(silent=True, force=True) or {}
+        if not payload:
+            current_app.logger.warning(
+                "Empty or non-JSON request body. "
+                "Content-Type: %s | Raw body length: %d bytes",
+                req.content_type,
+                req.content_length or 0,
+            )
 
         # Determine target model: prefer env AZURE_MODEL/AZURE_DEPLOYMENT
         inbound_model = payload.get("model")
