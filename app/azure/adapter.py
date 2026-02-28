@@ -52,11 +52,12 @@ class AzureAdapter:
         # Perform upstream request with kwargs directly (no long-lived session)
         resp = requests.request(**request_kwargs)
         if resp.status_code != 200:
-            return self._handle_azure_error(resp, request_kwargs)
+            incoming_payload = req.get_json(silent=True, force=True) or {}
+            return self._handle_azure_error(resp, request_kwargs, incoming_payload, req)
 
         return self.response_adapter.adapt(resp)
 
-    def _handle_azure_error(self, resp: Response, request_kwargs) -> Response:
+    def _handle_azure_error(self, resp: Response, request_kwargs, incoming_payload=None, incoming_req=None) -> Response:
 
         try:
             resp_content = resp.json()
@@ -76,6 +77,13 @@ class AzureAdapter:
             "\\1***\\3",
             body.get("prompt_cache_key") or "no prompt_cache_key",
         )
+        incoming_debug = {}
+        if incoming_payload is not None:
+            incoming_debug["keys"] = sorted(incoming_payload.keys())
+        if incoming_req is not None:
+            incoming_debug["content_type"] = incoming_req.content_type
+            incoming_debug["content_length"] = incoming_req.content_length
+
         report = {
             "endpoint": re.sub(
                 r"(//.)(.*?)(.\.)", "\\1***\\3", request_kwargs.get("url")
@@ -83,6 +91,7 @@ class AzureAdapter:
             "azure_status_code": resp.status_code,
             "azure_response": resp_content,
             "request_body": body,
+            "incoming_request_debug": incoming_debug,
         }
         # Precompute pretty JSON to avoid backslashes inside f-string expressions
         report_pretty = json.dumps(report, indent=4).replace("\n", "\n\t")
