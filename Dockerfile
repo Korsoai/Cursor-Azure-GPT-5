@@ -12,8 +12,16 @@ COPY autoapp.py ./
 COPY app app
 COPY .env.example .env
 
+
+# ================================= DEVELOPMENT ================================
+FROM builder AS development
+RUN pip install --no-cache -r requirements/dev.txt
+EXPOSE 5000
+CMD [ "flask", "run", "--host=0.0.0.0" ]
+
+
 # ================================= PRODUCTION =================================
-FROM python:${INSTALL_PYTHON_VERSION}-slim-bullseye as production
+FROM python:${INSTALL_PYTHON_VERSION}-slim-bullseye AS production
 
 WORKDIR /app
 
@@ -33,10 +41,3 @@ COPY . .
 EXPOSE 5000
 ENTRYPOINT ["/bin/bash", "supervisord/supervisord_entrypoint.sh"]
 CMD ["-c", "/etc/supervisor/supervisord.conf"]
-
-
-# ================================= DEVELOPMENT ================================
-FROM builder AS development
-RUN pip install --no-cache -r requirements/dev.txt
-EXPOSE 5000
-CMD [ "flask", "run", "--host=0.0.0.0" ]
