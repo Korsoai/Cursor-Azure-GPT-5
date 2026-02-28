@@ -58,9 +58,18 @@ class RequestAdapter:
             if role == "tool":
                 call_id = m.get("tool_call_id")
 
+                # output must be a plain string; join list content if needed
+                if isinstance(content, list):
+                    output = " ".join(
+                        part.get("text", "") if isinstance(part, dict) else str(part)
+                        for part in content
+                    )
+                else:
+                    output = content or ""
+
                 item = {
                     "type": "function_call_output",
-                    "output": content or "",
+                    "output": output,
                     "status": "completed",
                     "call_id": call_id,
                 }
