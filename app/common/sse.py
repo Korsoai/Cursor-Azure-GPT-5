@@ -39,8 +39,12 @@ class SSEEvent:
         Returns None if the data is empty, invalid JSON, or the [DONE] sentinel.
         """
         text = (self.data or "").strip()
-        val: Optional[Any] = json.loads(text)
-        return val
+        if not text or text == "[DONE]":
+            return None
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            return None
 
 
 class SSEDecoder:

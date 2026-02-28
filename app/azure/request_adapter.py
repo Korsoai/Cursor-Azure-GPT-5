@@ -122,10 +122,10 @@ class RequestAdapter:
         self.adapter.inbound_model = None
 
         # Parse request body
-        payload = req.get_json(silent=True, force=False)
+        payload = req.get_json(silent=True, force=False) or {}
 
         # Determine target model: prefer env AZURE_MODEL/AZURE_DEPLOYMENT
-        inbound_model = payload.get("model") if isinstance(payload, dict) else None
+        inbound_model = payload.get("model")
         self.adapter.inbound_model = inbound_model
 
         settings = current_app.config

@@ -117,7 +117,7 @@ def create_message_panel(msg: Dict[str, Any], idx: int, total: int) -> Panel:
         A Rich Panel object ready to be printed
     """
     role = str(msg.get("role", ""))
-    content_val = msg.get("content", "")
+    content_val = msg.get("content") or ""
     name = msg.get("name")
     tool_call_id = msg.get("tool_call_id")
     message_title = (
@@ -192,7 +192,7 @@ def log_request(req: Request) -> str:
 
     # Rich pretty print of the full request details
     console.rule(f"[bold]Request #{rid}[/bold] — {method} {path}")
-    json_payload = details.get("json")
+    json_payload = details.get("json") or {}
 
     # Remove verbose fields to log them separately
     cleaned_json = {
@@ -237,7 +237,8 @@ def log_request(req: Request) -> str:
         for param_name, param_value in props.items():
             param_type = param_value.get("type")
             if param_type == "array":
-                param_type += f"({param_value.get('items').get('type')})"
+                items = param_value.get("items") or {}
+                param_type += f"({items.get('type', '')})"
             if param_name in required:
                 param_type = f"[bold]*{param_type}[/bold]"
             param_type = f"[magenta]{param_type}[/magenta]"

@@ -72,7 +72,8 @@ class ResponseAdapter:
         self, obj: Optional[Dict[str, Any]]
     ) -> Optional[Dict[str, Any]]:
         """Handle response.output_item.added events and emit a single chunk."""
-
+        if not isinstance(obj, dict):
+            return None
         item_type = obj.get("item", {}).get("type")
         if item_type == "reasoning":
             self._thinking = True
@@ -151,6 +152,8 @@ class ResponseAdapter:
 
     def _failed(self, obj: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         """Handle response.failed events and emit a single chunk."""
+        if not isinstance(obj, dict):
+            return None
         error = obj.get("response", {}).get("error", {})
         return self._build_completion_chunk(
             delta={
@@ -248,9 +251,10 @@ class ResponseAdapter:
                                             )
                                         else:
                                             # Append arguments to the last tool call
-                                            completion_msg["tool_calls"][-1][
-                                                "function"
-                                            ]["arguments"] += arguments
+                                            if completion_msg["tool_calls"]:
+                                                completion_msg["tool_calls"][-1][
+                                                    "function"
+                                                ]["arguments"] += arguments
 
                     if self._tool_calls > 0:
                         yield self._build_completion_chunk(finish_reason="tool_calls")
