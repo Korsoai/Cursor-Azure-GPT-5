@@ -30,10 +30,24 @@ class RequestAdapter:
     def _copy_request_headers_for_azure(
         self, src: Request, *, api_key: str
     ) -> Dict[str, str]:
-        headers: Dict[str, str] = {k: v for k, v in src.headers.items()}
-        headers.pop("Host", None)
-        # Azure prefers api-key header
-        headers.pop("Authorization", None)
+        # Strip headers that must not be forwarded: hop-by-hop headers and
+        # Content-Length/Content-Encoding because we transform the body and
+        # the original sizes are wrong for the new Azure request.
+        _STRIP = {
+            "host",
+            "authorization",
+            "content-length",
+            "content-encoding",
+            "transfer-encoding",
+            "connection",
+            "keep-alive",
+            "te",
+            "trailer",
+            "upgrade",
+        }
+        headers: Dict[str, str] = {
+            k: v for k, v in src.headers.items() if k.lower() not in _STRIP
+        }
         headers["api-key"] = api_key
         return headers
 
