@@ -50,7 +50,7 @@ def catch_all(path: str):
         log_request(request)
     init_last_recording()
     increment_last_recording()
-    record_payload(request.json, "downstream_request")
+    record_payload(request.get_json(silent=True), "downstream_request")
     adapter = AzureAdapter()
     return adapter.forward(request)
 
