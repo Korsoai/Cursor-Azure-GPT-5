@@ -70,8 +70,24 @@ class RequestAdapter:
                 content_array = []
                 if content is not None:
                     if isinstance(content, list):
-                        # Already in parts format — pass through
-                        content_array = content
+                        # OpenAI multimodal list: convert type names to Responses API types
+                        for part in content:
+                            if not isinstance(part, dict):
+                                continue
+                            part_type = part.get("type")
+                            if part_type == "text":
+                                content_array.append({
+                                    "type": "input_text" if role == "user" else "output_text",
+                                    "text": part.get("text", ""),
+                                })
+                            elif part_type == "image_url":
+                                url = (part.get("image_url") or {}).get("url", "")
+                                content_array.append({
+                                    "type": "input_image",
+                                    "image_url": url,
+                                })
+                            else:
+                                content_array.append(part)
                     else:
                         content_array = [
                             {
