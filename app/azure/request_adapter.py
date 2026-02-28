@@ -30,26 +30,10 @@ class RequestAdapter:
     def _copy_request_headers_for_azure(
         self, src: Request, *, api_key: str
     ) -> Dict[str, str]:
-        # Strip headers that must not be forwarded: hop-by-hop headers and
-        # Content-Length/Content-Encoding because we transform the body and
-        # the original sizes are wrong for the new Azure request.
-        _STRIP = {
-            "host",
-            "authorization",
-            "content-length",
-            "content-encoding",
-            "transfer-encoding",
-            "connection",
-            "keep-alive",
-            "te",
-            "trailer",
-            "upgrade",
-        }
-        headers: Dict[str, str] = {
-            k: v for k, v in src.headers.items() if k.lower() not in _STRIP
-        }
-        headers["api-key"] = api_key
-        return headers
+        # Don't forward Cursor's headers to Azure — they're for our proxy, not
+        # the upstream API. Azure only needs api-key; requests sets Content-Type
+        # and Content-Length automatically when using json=.
+        return {"api-key": api_key}
 
     def _messages_to_responses_input_and_instructions(
         self, messages: List[Dict[str, Any]]
