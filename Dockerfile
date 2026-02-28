@@ -1,5 +1,5 @@
 # ================================== BUILDER ===================================
-ARG INSTALL_PYTHON_VERSION=${INSTALL_PYTHON_VERSION:-PYTHON_VERSION_NOT_SET}
+ARG INSTALL_PYTHON_VERSION=3.13
 
 FROM python:${INSTALL_PYTHON_VERSION}-slim-bullseye AS builder
 
