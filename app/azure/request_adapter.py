@@ -139,14 +139,19 @@ class RequestAdapter:
             return out
 
         for tool in tools:
-            function = tool.get("function") or {}
-            transformed: Dict[str, Any] = {
-                "type": "function",
-                "name": function.get("name"),
-                "description": function.get("description"),
-                "parameters": function.get("parameters"),
-                "strict": False,
-            }
+            function = tool.get("function")
+            if function:
+                # Chat Completions format: {"type": "function", "function": {"name": ...}}
+                transformed: Dict[str, Any] = {
+                    "type": "function",
+                    "name": function.get("name"),
+                    "description": function.get("description"),
+                    "parameters": function.get("parameters"),
+                    "strict": False,
+                }
+            else:
+                # Already in Responses API format: {"type": "function", "name": ..., ...}
+                transformed = {**tool, "strict": False}
             out.append(transformed)
         return out
 
