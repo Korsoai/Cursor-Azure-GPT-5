@@ -135,7 +135,22 @@ class RequestAdapter:
         )
 
         # Map Chat/Completions to Responses (always streaming)
+        # Cursor sends 'input' (Responses API format) when using certain model names
+        # instead of 'messages' (Chat Completions format) — normalize to messages
         messages = payload.get("messages") or []
+        if not messages:
+            raw_input = payload.get("input")
+            if isinstance(raw_input, list):
+                for item in raw_input:
+                    role = item.get("role", "user")
+                    content = item.get("content", "")
+                    if isinstance(content, list):
+                        content = "".join(
+                            part.get("text", "")
+                            for part in content
+                            if isinstance(part, dict)
+                        )
+                    messages.append({"role": role, "content": content or ""})
 
         responses_body = (
             self._messages_to_responses_input_and_instructions(messages)
