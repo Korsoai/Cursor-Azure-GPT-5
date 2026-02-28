@@ -67,8 +67,10 @@ class AzureAdapter:
         body["instructions"] = (body.get("instructions") or "no instructions")[:16] + "..."
         tools = body.get("tools") or []
         body["tools"] = f"...redacted {len(tools)} tools..."
-        input_items = body.get("input") or []
-        body["input"] = f"...redacted {len(input_items)} input items..."
+        raw_input = body.get("input")
+        input_type = type(raw_input).__name__
+        input_len = len(raw_input) if isinstance(raw_input, (list, str, dict)) else "n/a"
+        body["input"] = f"...redacted {input_type}({input_len}) input..."
         body["prompt_cache_key"] = re.sub(
             r"(...)(.*)(...)",
             "\\1***\\3",

@@ -133,32 +133,18 @@ class RequestAdapter:
         )
 
         # Map Chat/Completions to Responses (always streaming)
-        # Cursor sends 'input' (Responses API format) when using certain model names
-        # instead of 'messages' (Chat Completions format) — normalize to messages
+        # Cursor sends 'messages' (Chat Completions format) OR 'input' (Responses API
+        # format). Only convert when 'messages' is present; otherwise forward 'input'
+        # directly so we don't mangle a payload Cursor already formatted correctly.
         messages = payload.get("messages") or []
-        if not messages:
-            raw_input = payload.get("input")
-            if isinstance(raw_input, list):
-                for item in raw_input:
-                    role = item.get("role", "user")
-                    content = item.get("content", "")
-                    if isinstance(content, list):
-                        content = "".join(
-                            part.get("text", "")
-                            for part in content
-                            if isinstance(part, dict)
-                        )
-                    messages.append({"role": role, "content": content or ""})
-
         if messages:
             responses_body = self._messages_to_responses_input_and_instructions(messages)
             # Use payload-level instructions if none were extracted from system messages
             if responses_body.get("instructions") is None:
                 responses_body["instructions"] = payload.get("instructions")
         else:
-            # No messages — use input/instructions directly from payload.
-            # Handles Responses API format where Cursor sends input as a string
-            # or another non-list value we can't normalize through messages.
+            # No messages — Cursor is using Responses API format.
+            # Pass input (string or array) and instructions through directly.
             responses_body = {
                 "input": payload.get("input"),
                 "instructions": payload.get("instructions"),
