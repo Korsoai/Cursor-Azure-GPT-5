@@ -150,8 +150,8 @@ class RequestAdapter:
                     "strict": False,
                 }
             else:
-                # Already in Responses API format: {"type": "function", "name": ..., ...}
-                transformed = {**tool, "strict": False}
+                # Already in Responses API format: pass through as-is
+                transformed = dict(tool)
             out.append(transformed)
         return out
 
