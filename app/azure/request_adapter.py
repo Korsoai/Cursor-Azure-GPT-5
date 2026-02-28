@@ -156,7 +156,7 @@ class RequestAdapter:
         # Always streaming
         responses_body["stream"] = True
 
-        reasoning_effort = inbound_model.replace("gpt-", "").lower()
+        reasoning_effort = (inbound_model or "").replace("gpt-", "").lower()
         if reasoning_effort not in {"high", "medium", "low", "minimal"}:
             reasoning_effort = "high"
 
