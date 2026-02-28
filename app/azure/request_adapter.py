@@ -150,11 +150,19 @@ class RequestAdapter:
                         )
                     messages.append({"role": role, "content": content or ""})
 
-        responses_body = (
-            self._messages_to_responses_input_and_instructions(messages)
-            if isinstance(messages, list)
-            else {"input": None, "instructions": None}
-        )
+        if messages:
+            responses_body = self._messages_to_responses_input_and_instructions(messages)
+            # Use payload-level instructions if none were extracted from system messages
+            if responses_body.get("instructions") is None:
+                responses_body["instructions"] = payload.get("instructions")
+        else:
+            # No messages — use input/instructions directly from payload.
+            # Handles Responses API format where Cursor sends input as a string
+            # or another non-list value we can't normalize through messages.
+            responses_body = {
+                "input": payload.get("input"),
+                "instructions": payload.get("instructions"),
+            }
 
         responses_body["model"] = settings["AZURE_DEPLOYMENT"]
 
