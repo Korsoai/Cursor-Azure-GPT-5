@@ -24,7 +24,7 @@ AZURE_API_KEY = env.str("AZURE_API_KEY", "change_me")
 AZURE_DEPLOYMENT = env.str("AZURE_DEPLOYMENT", default="") or "gpt-5"
 
 AZURE_API_VERSION = env.str("AZURE_API_VERSION", default="") or "2025-04-01-preview"
-AZURE_SUMMARY_LEVEL = env.str("AZURE_SUMMARY_LEVEL", default="") or "detailed"
+AZURE_SUMMARY_LEVEL = env.str("AZURE_SUMMARY_LEVEL", default="") or "none"
 AZURE_VERBOSITY_LEVEL = env.str("AZURE_VERBOSITY_LEVEL", default="") or "medium"
 AZURE_TRUNCATION = env.str("AZURE_TRUNCATION", default="") or "disabled"
 

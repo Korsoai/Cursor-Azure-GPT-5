@@ -225,19 +225,24 @@ class RequestAdapter:
         if reasoning_effort not in {"high", "medium", "low", "minimal"}:
             reasoning_effort = "high"
 
-        responses_body["reasoning"] = {
-            "effort": reasoning_effort,
-        }
+        # Start from Cursor's own reasoning fields if present (Responses API format
+        # requests may already specify summary/other reasoning params). Always apply
+        # our effort mapping from the model name — that's the whole point of the proxy.
+        reasoning: Dict[str, Any] = dict(payload.get("reasoning") or {})
+        reasoning["effort"] = reasoning_effort
 
-        # Concise is not supported by GPT-5,
-        # but allowing it for now to be able to test it on other models
-        if settings["AZURE_SUMMARY_LEVEL"] in {"auto", "detailed", "concise"}:
-            responses_body["reasoning"]["summary"] = settings["AZURE_SUMMARY_LEVEL"]
-        else:
+        # Only add summary if explicitly configured. Default is "none" which means
+        # don't set it — the model uses its own default (no <think> blocks in output).
+        summary_level = settings["AZURE_SUMMARY_LEVEL"]
+        if summary_level in {"auto", "detailed", "concise"}:
+            reasoning["summary"] = summary_level
+        elif summary_level != "none":
             raise ServiceConfigurationError(
-                "AZURE_SUMMARY_LEVEL must be either auto, detailed, or concise."
-                f"\n\nGot: {settings['AZURE_SUMMARY_LEVEL']}"
+                "AZURE_SUMMARY_LEVEL must be auto, detailed, concise, or none."
+                f"\n\nGot: {summary_level}"
             )
+
+        responses_body["reasoning"] = reasoning
 
         # No need to pass verbosity if it's set to medium, as it's the model's default
         if settings["AZURE_VERBOSITY_LEVEL"] in {"low", "high"}:
