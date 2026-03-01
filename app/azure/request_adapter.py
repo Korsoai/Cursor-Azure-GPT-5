@@ -199,9 +199,13 @@ class RequestAdapter:
         else:
             # No messages — Cursor is using Responses API format.
             # Pass input (string or array) and instructions through directly.
+            # Also forward `include` so reasoning.encrypted_content is returned
+            # and available for subsequent turns (preserves the model's reasoning
+            # context across tool call turns in agentic workflows).
             responses_body = {
                 "input": payload.get("input"),
                 "instructions": payload.get("instructions"),
+                "include": payload.get("include"),
             }
 
         responses_body["model"] = settings["AZURE_DEPLOYMENT"]
